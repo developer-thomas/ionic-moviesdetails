@@ -7,7 +7,7 @@ export interface Results {
   adult: boolean;
   backdrop_path: string;
   genre_ids: number[];
-  id: number;
+  id: string;
   original_language: string;
   original_title: string;
   overview: string;
@@ -18,6 +18,9 @@ export interface Results {
   video: boolean;
   vote_average: number;
   vote_count: number;
+  tag_line: string;
+  genres: any[];
+  budget: string;
 }
 
 export interface ApiResult {
@@ -39,8 +42,8 @@ export class MovieService {
     );
   }
 
-  getMovieDetails(id: string) {
-    return this.http.get(
+  getMovieDetails(id: string): Observable<Results> {
+    return this.http.get<Results>(
       `${environment.baseUrl}/movie/${id}?api_key=${environment.apiKey}`
     );
   }

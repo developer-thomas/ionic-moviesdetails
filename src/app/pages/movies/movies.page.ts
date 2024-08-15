@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { LoadingController } from '@ionic/angular';
+import { InfiniteScrollCustomEvent, LoadingController } from '@ionic/angular';
 import { MovieService, Results } from 'src/app/services/movie.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-movies',
@@ -8,8 +9,10 @@ import { MovieService, Results } from 'src/app/services/movie.service';
   styleUrls: ['./movies.page.scss'],
 })
 export class MoviesPage implements OnInit {
-  movies: Results[] = [];
+  // Cada página mostra 20 elementos, cada adição de página, carrega +20 elementos
   currentPage = 1;
+  movies: Results[] = [];
+  imageBaseUrl = environment.images;
 
   constructor(
     private movieService: MovieService,
@@ -20,7 +23,8 @@ export class MoviesPage implements OnInit {
     this.loadMovies();
   }
 
-  async loadMovies() {
+  // passar o parâmetro do evento opcional, pois nem toda chamada desse método utiliza o ev.
+  async loadMovies(eventLoadMore?: InfiniteScrollCustomEvent) {
     const loading = await this.loadingCtrl.create({
       message: 'Loading...',
       spinner: 'bubbles',
@@ -30,8 +34,22 @@ export class MoviesPage implements OnInit {
 
     this.movieService.getTopRatedMovies(this.currentPage).subscribe((res) => {
       loading.dismiss();
-      this.movies = [...this.movies, ...res.results];
-      console.log(this.movies);
+      // utiliza-se o spread para criar um array desses resultados
+      this.movies.push(...res.results);
+
+      // finalizando a animação do evento de carregar mais
+      eventLoadMore?.target.complete();
+
+      // se houver a chamada do evento de carregar mais
+      // iremos atribuir disabled quando o total de páginas for igual a página atual
+      if (eventLoadMore) {
+        eventLoadMore.target.disabled = res.total_pages === this.currentPage;
+      }
     });
+  }
+
+  loadMore(event: InfiniteScrollCustomEvent) {
+    this.currentPage++;
+    this.loadMovies(event);
   }
 }
