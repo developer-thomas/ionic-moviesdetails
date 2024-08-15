@@ -8,15 +8,16 @@ import { environment } from 'src/environments/environment';
   templateUrl: './movie-details.page.html',
   styleUrls: ['./movie-details.page.scss'],
 })
-export class MovieDetailsPage implements OnInit {
-  movieDetail!: Results;
+export class MovieDetailsPage {
+  movieDetail?: Results;
+
   imageBaseUrl = environment.images;
   constructor(
     private route: ActivatedRoute,
     private movieService: MovieService
   ) {}
 
-  ngOnInit() {
+  ionViewWillEnter() {
     const id = this.route.snapshot.params['id'];
     this.movieService.getMovieDetails(id).subscribe((res) => {
       console.log(res);
